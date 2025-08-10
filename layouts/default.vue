@@ -1,0 +1,210 @@
+<template>
+    <q-layout view="lHh Lpr lFf" style="position:relative; z-index:0;">
+      <span
+        v-for="(cloud, i) in clouds"
+        :key="'cloud'+i"
+        class="bg-icon material-icons"
+        :style="{
+          top: cloud.top,
+          left: cloud.left,
+          fontSize: cloud.size,
+          animation: `${cloud.direction === 'left' ? 'cloud-move-left' : 'cloud-move-right'} ${cloud.duration} linear infinite`
+        }"
+      >cloud</span>
+      <div
+        v-for="(plane, i) in planes"
+        :key="'plane'+i"
+        class="bg-plane-img"
+        :style="{
+          top: plane.startTop,
+          left: plane.startLeft,
+          width: plane.size,
+          height: `calc(${plane.size} * 0.7)`,
+          animation: `plane-move-diag ${plane.duration} linear infinite`
+        }"
+      ></div>
+      <q-header elevated>
+        <q-toolbar style="display: flex; align-items: center; padding-left: 0;">
+          <q-btn
+            flat
+            dense
+            no-caps
+            class="text-weight-bold logo-btn"
+            @click="$router.push('/')"
+            style="font-size:1.2rem; display:flex; align-items:center; gap:16px; background:transparent; height:56px; padding:0 16px 0 10px; margin-right:0; border-top-left-radius:0; border-bottom-left-radius:0; border-top-right-radius:0; border-bottom-right-radius:0;"
+          >
+            <img src="/images/logo.png" alt="로고" style="height:48px;width:48px;object-fit:contain;background:none;display:inline-block;vertical-align:middle;" />
+            <span style="display:inline-flex;align-items:center;height:48px;line-height:48px;vertical-align:middle;">PassCheckers</span>
+          </q-btn>
+          <div style="flex:1 1 auto; padding:0; margin:0; display:flex;">
+            <q-btn
+              v-for="item in menu"
+              :key="item.path"
+              flat dense no-caps
+              :label="item.label"
+              @click="$router.push(item.path)"
+              :class="{'nav-active': route.path === item.path}"
+              style="position:relative;"
+            >
+              <template v-if="route.path === item.path">
+                <div class="nav-underline"></div>
+              </template>
+            </q-btn>
+          </div>
+          <div class="q-gutter-sm q-ml-md gt-sm" style="margin-right:32px; display:flex; align-items:center;">
+            <template v-if="!isLoggedIn">
+              <q-btn flat dense no-caps class="profile-btn" label="로그인" @click="$router.push('/login')" />
+              <q-btn flat dense no-caps class="profile-btn signup-btn" label="회원가입" @click="$router.push('/signup')" />
+            </template>
+            <template v-else>
+              <q-btn round flat dense icon="account_circle" size="23px" @click="goToProfile" />
+              <q-btn flat dense no-caps class="profile-btn" label="로그아웃" @click="logout" />
+            </template>
+          </div>
+          <q-btn flat dense round icon="menu" class="lt-md" @click="drawer = !drawer" />
+        </q-toolbar>
+        <q-drawer v-model="drawer" side="right" overlay class="lt-md">
+          <q-list>
+            <q-item clickable v-for="item in menu" :key="item.label" @click="$router.push(item.path)">
+              <q-item-section>{{ item.label }}</q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable>
+              <q-item-section>회원가입</q-item-section>
+            </q-item>
+            <q-item clickable>
+              <q-item-section>내정보</q-item-section>
+            </q-item>
+          </q-list>
+        </q-drawer>
+      </q-header>
+      <q-page-container>
+        <transition name="fade-scale" mode="out-in">
+          <NuxtPage />
+        </transition>
+      </q-page-container>
+    </q-layout>
+  </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+const drawer = ref(false)
+const menu = [
+  { label: '수하물 분류', path: '/classification' },
+  { label: '수하물 무게 예측', path: '/weight' },
+  { label: '수하물 패킹', path: '/packing' },
+  { label: '커뮤니티', path: '/community' },
+  { label: '여행 추천', path: '/recommend' },
+  { label: '여행 정보', path: '/info' },
+  { label: '공유', path: '/share' },
+]
+
+const route = useRoute()
+const router = useRouter()
+
+const isLoggedIn = ref(false)
+const user = ref({
+  name: '',
+  email: '',
+  avatar: '/images/user.png'
+})
+const profileMenu = ref(false)
+const profileBtnRef = ref(null)
+const profileMenu2 = ref(false)
+const profileBtnRef2 = ref(null)
+
+const clouds = ref([])
+const planes = ref([])
+
+function random(min, max) {
+  return Math.random() * (max - min) + min
+}
+
+function syncLoginState() {
+  isLoggedIn.value = !!localStorage.getItem('access_token')
+  const userInfo = localStorage.getItem('user')
+  if (userInfo) {
+    try {
+      user.value = JSON.parse(userInfo)
+    } catch (e) {
+      user.value = { name: '', email: '', avatar: '/images/user.png' }
+    }
+  } else {
+    user.value = { name: '', email: '', avatar: '/images/user.png' }
+  }
+}
+
+onMounted(() => {
+  syncLoginState()
+  window.addEventListener('login', syncLoginState)
+  window.addEventListener('logout', syncLoginState)
+  clouds.value = Array.from({ length: 4 }, () => ({
+    top: random(10, 70) + 'vh',
+    left: random(0, 80) + 'vw',
+    size: random(50, 120) + 'px',
+    duration: random(40, 80) + 's',
+    direction: Math.random() > 0.5 ? 'left' : 'right'
+  }))
+  planes.value = Array.from({ length: 1 }, () => ({
+    startTop: random(60, 80) + 'vh',
+    startLeft: random(70, 90) + 'vw',
+    size: random(60, 100) + 'px',
+    duration: random(40, 60) + 's'
+  }))
+})
+
+async function logout() {
+  try {
+    const access_token = localStorage.getItem('access_token')
+    if (access_token) {
+      await $fetch('http://' + window.location.hostname + ':5001/api/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${access_token}`
+        }
+      })
+    }
+  } catch (err) {
+    console.log('로그아웃 API 호출 실패:', err)
+  } finally {
+    isLoggedIn.value = false
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user')
+    window.dispatchEvent(new Event('logout'))
+    router.push('/')
+  }
+}
+
+function goToProfile() {
+  // 내 정보 페이지로 이동
+  $router.push('/info')
+}
+
+// 로그인 후 user 정보 저장을 위해 전역 expose
+if (process.client) {
+  window.setUserInfo = (userInfo) => {
+    user.value = userInfo
+    localStorage.setItem('user', JSON.stringify(userInfo))
+    isLoggedIn.value = true
+    window.dispatchEvent(new Event('login'))
+  }
+}
+</script>
+
+<style src="~/assets/theme.css"></style>
+<style>
+.fade-scale-enter-active, .fade-scale-leave-active {
+  transition: opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1);
+}
+.fade-scale-enter-from, .fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+.fade-scale-leave-from, .fade-scale-enter-to {
+  opacity: 1;
+  transform: scale(1);
+}
+</style>
