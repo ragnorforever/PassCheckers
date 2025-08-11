@@ -1,2 +1,25 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# 문서 파일들을 언어 통계에서 제외
+*.md linguist-documentation
+*.txt linguist-documentation
+*.pdf linguist-documentation
+*.doc linguist-documentation
+*.docx linguist-documentation
+
+# 설정 파일들을 언어 통계에서 제외
+*.json linguist-vendored
+*.yaml linguist-vendored
+*.yml linguist-vendored
+*.toml linguist-vendored
+*.ini linguist-vendored
+*.cfg linguist-vendored
+
+# 특정 디렉토리 제외
+docs/** linguist-documentation
+config/** linguist-vendored
+tests/** linguist-documentation
+
+# Python 파일 중 일부를 문서로 분류
+*.py linguist-language=Python
